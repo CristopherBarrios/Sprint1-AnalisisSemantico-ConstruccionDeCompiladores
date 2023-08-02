@@ -3,6 +3,8 @@ GLOBAL = 'Global'
 ATTR = 'attr'
 METHOD = 'method'
 PARAMETER = 'parameter'
+DECLARATION = 'declaration'
+LET = 'let'
 CLASS = 'class'
 
 SELF_TYPE = 'SELF_TYPE'
@@ -11,7 +13,9 @@ KIND_TABLE_ERROR = {
     ATTR: 'Variable',
     METHOD: 'Método',
     PARAMETER: 'Parámetro',
-    CLASS: 'Clase'
+    CLASS: 'Clase',
+    DECLARATION: 'Declaracion',
+    LET: 'Let'
 }
 
 CLASS = 1

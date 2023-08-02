@@ -92,9 +92,10 @@ def get_code():
         print("______________________________________________________________________________________________________________________________________________________________")
         print("")
 
-        # listenator = Listener.MyYAPLListener()
-        # walker = ParseTreeWalker()
-        # walker.walk(listenator, tree)
+        listenator = Listener.MyYAPLListener()
+        walker = ParseTreeWalker()
+        walker.walk(listenator, tree)
+        table = listenator.getTable()
 
         Grafic = Digraph()
         def nod(node, parent=None):
@@ -113,12 +114,14 @@ def get_code():
         #Crear png de la Grafica
         graphner(output_folder,Grafic)
 
-        visitonator = Visitor.MyYAPLVisitor()
+
+
+        visitonator = Visitor.MyYAPLVisitor(table)
         visitonator.visit(tree)
         errors = visitonator.ERRORS
 
-        #listen = listenator.ERRORS
-        #errors += listen
+        listen = listenator.ERRORS
+        errors += listen
         SyntaxErrors = error_listener.ERRORS
         errors += SyntaxErrors
 

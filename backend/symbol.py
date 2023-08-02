@@ -9,6 +9,9 @@ class Symbol:
         self.custom_error_listener = Error()
         self.ERRORS = self.custom_error_listener.ERRORS
 
+    def getTable(self):
+        return self.table
+    
     def push_scope(self, scope):
         self.scopes.append(scope)
 

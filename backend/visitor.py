@@ -12,7 +12,7 @@ from backend.functions import *
 
 
 class MyYAPLVisitor(YAPLVisitor):
-    def __init__(self):
+    def __init__(self, table):
         YAPLVisitor.__init__(self)
         self.ERRORS = []
 
@@ -23,6 +23,7 @@ class MyYAPLVisitor(YAPLVisitor):
         self.instantiable_ids = 0
         global_scope = tables.Scope()
         self.scopes = []
+        self.table = table
 
         self.clases = []
         self.metodos = []
@@ -61,6 +62,15 @@ class MyYAPLVisitor(YAPLVisitor):
 
         self.total_scopes = {}
         self.printidorClases = {}
+
+
+    def getAttribute(self, name, scope=None):
+        for i in self.table:
+            if i['name'] == name:
+                if scope != None and i['scope'] != scope and i['scope'] != 'Global':
+                    continue
+                return i
+        return None
 
     def visitStart(self, ctx):
         # self.ERRORS = []
@@ -137,16 +147,12 @@ class MyYAPLVisitor(YAPLVisitor):
 
 
     def visitClass_list(self, ctx):
-
         class_list = [self.visit(ctx.class_exp())]
         programB = self.visit(ctx.program())
-        
-        #return self.visitChildren(ctx)
 
  
     def visitEnd(self, ctx):
         self.visitStart(ctx)
-        #return self.visitChildren(ctx)
 
 
     def visitClass_exp(self, ctx):
@@ -282,34 +288,21 @@ class MyYAPLVisitor(YAPLVisitor):
         return letin
 
 
-    def visitMinus(self, ctx):
-        l = self.visit(ctx.expr(0))
-        r = self.visit(ctx.expr(1))
 
-        if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-        # if (l != "INT" or r != "INT"):
-        #     if l != "ID" and r != "ID":
-                new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error)
-        
-
-        minus = lista.Minus(l,r)
-        self.minus.append(minus)
-        return minus
-        #return self.visitChildren(ctx)
 
 
 
     def visitNegation(self, ctx):
         bn = self.visit(ctx.expr())
 
+        if (type(bn).__name__ != 'TrueCount' and type(bn).__name__ != 'FalseCount' and type(bn).__name__ != 'Id'):
+                new_error = tables.Error("No corresponden los tipos del not", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error)
+
         boolnot = lista.BoolNot(bn)
         self.boolnot.append(boolnot)
 
         return boolnot
-
-
 
 
     def visitDispatch(self, ctx):
@@ -360,25 +353,9 @@ class MyYAPLVisitor(YAPLVisitor):
         self.whileCount.append(whileCount)
 
         return whileCount
-        #return self.visitChildren(ctx)
+    
 
 
-
-    def visitvDivision(self, ctx):
-        l = self.visit(ctx.expr(0))
-        r = self.visit(ctx.expr(1))
-
-        if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-        # if (l != "INT" or r != "INT"):
-        #     if l != "ID" and r != "ID":
-                new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
-
-        division = lista.Division(l,r)
-        self.division.append(division)
-
-        return division
 
 
     def visitNewObject(self, ctx):
@@ -389,7 +366,6 @@ class MyYAPLVisitor(YAPLVisitor):
 
         return new
 
-
  
     def visitLessThan(self, ctx):
         l = self.visit(ctx.expr(0))
@@ -397,9 +373,6 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-        # if (l != r):
-        #     if l != "ID" and r != "ID":
-
                 new_error = tables.Error("No corresponden los tipos de la comparacion =", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
 
@@ -407,8 +380,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.lessthan.append(lessthan)
 
         return lessthan
-
-
 
 
     def visitBlock(self, ctx):
@@ -426,12 +397,19 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitNegInteger(self, ctx):
         ne = self.visit(ctx.expr())
 
+        if type(ne).__name__ == 'Id':
+            id = self.getAttribute(ctx.expr().getText())
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+
+        if (type(ne).__name__ != 'Int' and type(ne).__name__ != 'Id'):
+                new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
         negative = lista.Negative(ne)
         self.negative.append(negative)
 
         return negative
-        #return self.visitChildren(ctx)
-
 
 
     def visitId(self, ctx):
@@ -441,7 +419,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.id.append(id)
 
         return id
-        #return "ID"
 
 
 
@@ -458,7 +435,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.ifCount.append(ifcount)
 
         return ifcount
-
 
 
     def visitCase(self, ctx):
@@ -495,27 +471,53 @@ class MyYAPLVisitor(YAPLVisitor):
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
                 new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
-        # if (l != "INT" or r != "INT"):
-        #     if l != "ID" and r != "ID":
-        #         new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.getText())
-        #         self.ERRORS.append(new_error)
 
         add = lista.Add(l,r)
         self.add.append(add)
 
-        #return self.visitChildren(ctx)
 
+    def visitMinus(self, ctx):
+        l = self.visit(ctx.expr(0))
+        r = self.visit(ctx.expr(1))
+
+        if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+                new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error)
+        
+        minus = lista.Minus(l,r)
+        self.minus.append(minus)
+        
+        return minus
+    
+
+    def visitvDivision(self, ctx):
+        l = self.visit(ctx.expr(0))
+        r = self.visit(ctx.expr(1))
+
+        if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+                new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+
+        division = lista.Division(l,r)
+        self.division.append(division)
+
+        return division
 
 
     def visitStar(self, ctx):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
+        if type(r).__name__ == 'Id':
+            id = self.getAttribute(ctx.expr(1).getText())
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-
-        # if (l != "INT" or r != "INT"):
-        #     if l != "ID" and r != "ID":
                 new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)   
 
@@ -523,9 +525,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.multiply.append(multiply)
 
         return multiply
-
-        #return self.visitChildren(ctx)
-
 
 
     def visitAssignment(self, ctx):
@@ -536,7 +535,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.assignment.append(assignement)
 
         return assignement
-        #return self.visitChildren(ctx)
 
 
 
@@ -547,7 +545,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.fals.append(fals)
 
         return fals
-        #return "FALSE"
 
 
     def visitParenthesis(self, ctx):
@@ -566,8 +563,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.integer.append(integer)
 
         return integer
-        #return "INT"
-
 
 
     def visitCall(self, ctx):
@@ -597,7 +592,6 @@ class MyYAPLVisitor(YAPLVisitor):
         OwnMeth = lista.OwnMethod(method,arguments)
         self.ownmethod.append(OwnMeth)
         return OwnMeth
-        #return self.visitChildren(ctx)
 
 
     def visitStr(self, ctx):
@@ -617,12 +611,10 @@ class MyYAPLVisitor(YAPLVisitor):
             id = "\\t"
             striLoop = idTexto(id,stri,striLoop,self.valor,list_valus)
 
-
         string = lista.String(striLoop,stri,list_valus)
         self.string.append(string)
 
         return string
-        #return "STRING"
 
 
 
@@ -632,9 +624,6 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-
-        # if (l != r):
-        #     if l != "ID" and r != "ID":
                 new_error = tables.Error("No corresponden los tipos de la comparacion <", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
 
@@ -642,7 +631,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.equal.append(equal)
 
         return equal
-        #return self.visitChildren(ctx)
 
 
     def visitIsVoid(self, ctx):
@@ -652,8 +640,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.void.append(void)
 
         return void
-        #return self.visitChildren(ctx)
-
 
 
     def visitTrue(self, ctx):
@@ -663,7 +649,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.truet.append(truet)
 
         return truet
-        #return "TRUE"
 
 
 
@@ -673,9 +658,6 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-
-        # if (l != r):
-        #     if l != "ID" and r != "ID":
                 new_error = tables.Error("No corresponden los tipos de la comparacion <=", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
 
@@ -683,4 +665,3 @@ class MyYAPLVisitor(YAPLVisitor):
         self.lessequal.append(lessequal)
 
         return lessequal
-        #return self.visitChildren(ctx)

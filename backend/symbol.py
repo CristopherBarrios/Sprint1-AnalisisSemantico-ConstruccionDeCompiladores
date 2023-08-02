@@ -21,7 +21,14 @@ class Symbol:
     def insert(self, name, typ, kind, scope, line, value=None):
         scope_variables = filter(lambda x: x['scope'] == scope, self.table)
         if (name, kind) in map(lambda x: (x['name'], x['kind']), scope_variables):
-            self.custom_error_listener.error(KIND_TABLE_ERROR[kind] + ' ' + name + ' ya declarada ', line)
+            if kind == 'parameter':
+                for p in reversed(self.table):
+                    if p['kind'] == 'method':
+                        break
+                    elif p['name'] == name and p['kind'] == kind and p['scope'] == scope and p['line'] == line :
+                        self.custom_error_listener.error(KIND_TABLE_ERROR[kind] + ' ' + name + ' ya declarada ', line)
+            else:
+                self.custom_error_listener.error(KIND_TABLE_ERROR[kind] + ' ' + name + ' ya declarada ', line)
 
         self.table.append({'name': name, 'type': typ, 'kind': kind, 'scope': scope, 'line': line, 'value': value})
 

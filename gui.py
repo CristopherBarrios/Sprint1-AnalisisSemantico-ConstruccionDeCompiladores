@@ -97,6 +97,12 @@ def get_code():
         walker.walk(listenator, tree)
         table = listenator.getTable()
 
+        print("")
+        print("----------------------------------------------------")
+        print(str(listenator.symbol_table))
+        print("----------------------------------------------------")
+        print("")
+
         Grafic = Digraph()
         def nod(node, parent=None):
             if isinstance(node, ParserRuleContext):

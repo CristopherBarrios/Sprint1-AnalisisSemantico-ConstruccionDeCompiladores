@@ -88,14 +88,6 @@ class MyYAPLListener(YAPLListener):
 
     def getTable(self):
         return self.symbol_table.getTable()
-    
-    def exitClass_list(self, ctx):
-
-        print("")
-        print("----------------------------------------------------")
-        print(str(self.symbol_table))
-        print("----------------------------------------------------")
-        print("")
 
     def enterClass_exp(self, ctx):
         self.insert_class(ctx)
@@ -122,6 +114,20 @@ class MyYAPLListener(YAPLListener):
     def enterFormal(self, ctx):
         self.insert_param(ctx)
 
+    def enterDeclaration(self, ctx):
+        self.insert_decla(ctx)
+
+    def exitDeclaration(self, ctx):
+        if ctx.children[1].getText() != ':':
+            self.symbol_table.pop_scope()
+
+    def enterLetIn(self, ctx):
+        self.insert_letin(ctx)
+
+    def exitLetIn(self, ctx):
+        if ctx.children[1].getText() != ':':
+            self.symbol_table.pop_scope()
+
     def enterExpr(self, ctx):
         children = list(map(lambda x: x.getText(), ctx.children))
         if '<-' in children:
@@ -136,6 +142,9 @@ class MyYAPLListener(YAPLListener):
     def enterClass_list(self, ctx):
         pass
 
+    def exitClass_list(self, ctx):
+        pass
+
     def enterEnd(self, ctx):
         pass
 
@@ -144,20 +153,6 @@ class MyYAPLListener(YAPLListener):
 
     def exitFormal(self, ctx):
         pass
-
-    def enterDeclaration(self, ctx):
-        self.insert_decla(ctx)
-
-    def exitDeclaration(self, ctx):
-        if ctx.children[1].getText() != ':':
-            self.symbol_table.pop_scope()
-
-    def enterLetIn(self, ctx):
-        self.insert_letin(ctx)
-
-    def exitLetIn(self, ctx):
-        if ctx.children[1].getText() != ':':
-            self.symbol_table.pop_scope()
 
     def enterMinus(self, ctx):
         pass

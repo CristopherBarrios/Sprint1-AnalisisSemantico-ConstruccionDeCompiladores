@@ -413,6 +413,28 @@ class MyYAPLVisitor(YAPLVisitor):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
+
+        if type(r).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
+
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
                 new_error = tables.Error("No corresponden los tipos de la comparacion =", ctx.start.line, ctx.start.column,ctx.getText())
@@ -422,6 +444,76 @@ class MyYAPLVisitor(YAPLVisitor):
         self.lessthan.append(lessthan)
 
         return lessthan
+    
+    def visitEqual(self, ctx):
+        l = self.visit(ctx.expr(0))
+        r = self.visit(ctx.expr(1))
+
+        if type(r).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
+
+        if type(l).__name__ != type(r).__name__ :
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+                new_error = tables.Error("No corresponden los tipos de la comparacion <", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+
+        equal = lista.Equal(l,r)
+        self.equal.append(equal)
+
+        return equal
+    
+    def visitLessEqual(self, ctx):
+        l = self.visit(ctx.expr(0))
+        r = self.visit(ctx.expr(1))
+
+        if type(r).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
+
+        if type(l).__name__ != type(r).__name__ :
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+                new_error = tables.Error("No corresponden los tipos de la comparacion <=", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+
+        lessequal = lista.LessEqual(l,r)
+        self.lessequal.append(lessequal)
+
+        return lessequal
 
 
     def visitBlock(self, ctx):
@@ -752,19 +844,7 @@ class MyYAPLVisitor(YAPLVisitor):
 
 
 
-    def visitEqual(self, ctx):
-        l = self.visit(ctx.expr(0))
-        r = self.visit(ctx.expr(1))
 
-        if type(l).__name__ != type(r).__name__ :
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-                new_error = tables.Error("No corresponden los tipos de la comparacion <", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
-
-        equal = lista.Equal(l,r)
-        self.equal.append(equal)
-
-        return equal
 
 
     def visitIsVoid(self, ctx):
@@ -786,16 +866,4 @@ class MyYAPLVisitor(YAPLVisitor):
 
 
 
-    def visitLessEqual(self, ctx):
-        l = self.visit(ctx.expr(0))
-        r = self.visit(ctx.expr(1))
 
-        if type(l).__name__ != type(r).__name__ :
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
-                new_error = tables.Error("No corresponden los tipos de la comparacion <=", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
-
-        lessequal = lista.LessEqual(l,r)
-        self.lessequal.append(lessequal)
-
-        return lessequal

@@ -22,7 +22,12 @@ class MyYAPLVisitor(YAPLVisitor):
         self.offset = 0
         self.instantiable_ids = 0
         global_scope = tables.Scope()
+        self.actual_scope = 'Global'
+        self.method_scope = ''
+        self.cont_lets = 0
+        self.let_scope = []
         self.scopes = []
+        self.variables = []
         self.table = table
 
         self.clases = []
@@ -63,14 +68,26 @@ class MyYAPLVisitor(YAPLVisitor):
         self.total_scopes = {}
         self.printidorClases = {}
 
-
+                    # if self.let_scope != '' and i['kind'] == 'declaration':
+                    #     return i
     def getAttribute(self, name, scope=None):
-        for i in self.table:
+        for i in self.table: 
             if i['name'] == name:
-                if scope != None and i['scope'] != scope and i['scope'] != 'Global':
+                # if self.actual_scope == i['scope'] or self.method_scope == i['scope'] or self.let_scope== i['scope']:
+                #     return i
+                if scope != None and (i['scope'] != self.actual_scope and i['scope'] != self.method_scope and i['scope'] != self.let_scope) and i['scope'] != 'Global':
                     continue
                 return i
         return None
+    
+
+    # def getAttribute(self, name, scope=None):
+    #     for i in reversed(self.table): 
+    #         if i['name'] == name:
+    #             if scope != None and (i['scope'] != self.actual_scope and i['scope'] != self.method_scope and i['scope'] != self.let_scope) and i['scope'] != 'Global':
+    #                 continue
+    #             return i
+    #     return None
 
     def visitStart(self, ctx):
         # self.ERRORS = []
@@ -158,15 +175,20 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitClass_exp(self, ctx):
         class_name = ctx.TYPE(0).getText()
         self.class_ids += 1
+        self.actual_scope = class_name
 
         parent = None
         if len(ctx.TYPE()) > 1:
             parent = ctx.TYPE(1).getText()
 
         features = []
+        propertyCount = 0
         for f in ctx.feature():
             feature = self.visit(f)
             features.append(feature)
+            if type(feature).__name__ == 'Property':
+                propertyCount += 1
+                self.variables.append(feature)
 
         for met in self.clases:
             if class_name == met.name:
@@ -175,6 +197,10 @@ class MyYAPLVisitor(YAPLVisitor):
 
         clase = lista.Clase(class_name,parent,self.class_ids,features)
         self.clases.append(clase)
+        self.actual_scope = 'Global'
+
+        if propertyCount != 0:
+            self.variables = eliminar_ultimos_elementos(self.variables, propertyCount)
 
         if ctx.INHERITS():
             if class_name == "Main":
@@ -195,6 +221,8 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitMethod(self, ctx):
         name = ctx.ID().getText()
         type = None;expr=None
+
+        self.method_scope = name
         if ctx.TYPE():
             type = ctx.TYPE().getText()
         self.method_ids += 1
@@ -202,18 +230,25 @@ class MyYAPLVisitor(YAPLVisitor):
         for meto in self.metodos:
             if name == meto.name:
                 self.method_ids -= 1
-                return 0
+                #return 0
 
         formalParams = []
+        formalCont = 0
         for f in ctx.formal():
+            formalCont += 1
             formalParam = self.visit(f)
             formalParams.append(formalParam)
+            self.variables.append(formalParam)
 
         if ctx.expr():
             expr = self.visit(ctx.expr())
 
         metodo = lista.Method(name,self.method_ids,type,formalParams,expr)
         self.metodos.append(metodo)
+        self.method_scope = ''
+
+        if formalCont != 0:
+            self.variables = eliminar_ultimos_elementos(self.variables, formalCont)
 
         if name == "main":
             if ctx.formal():
@@ -276,14 +311,25 @@ class MyYAPLVisitor(YAPLVisitor):
 
 
     def visitLetIn(self, ctx):
+        declaCont = 0
         let = self.visit(ctx.declaration(0))
+        declaCont += 1
+        self.variables.append(let)
+        self.cont_lets += 1
+        self.let_scope.append('let' + str(self.cont_lets))
         let1 = None
+
         if ctx.declaration(1) is not None:
+            declaCont += 1
             let1 = self.visit(ctx.declaration(1))
+            self.variables.append(let1)
         expr = self.visit(ctx.expr())
 
         letin = lista.LetIn(let,let1,expr)
         self.letin.append(letin)
+        self.let_scope.pop()
+        if declaCont != 0:
+            self.variables = eliminar_ultimos_elementos(self.variables, declaCont)
 
         return letin
 
@@ -466,6 +512,18 @@ class MyYAPLVisitor(YAPLVisitor):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
+        if type(r).__name__ == 'Id':
+            id = self.getAttribute(ctx.expr(1).getText(),self.actual_scope)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'Id':
+            id = self.getAttribute(ctx.expr(0).getText(),self.actual_scope)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error) 
+
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
@@ -510,11 +568,37 @@ class MyYAPLVisitor(YAPLVisitor):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
+        # if self.let_scope != []:
+        #     tamanio = len(self.let_scope)
+        #     contDecl = 0
+        #     for let in reversed(self.declaration):
+        #         contDecl += 1
+        #         let_name = let.name
+        #         let_type = let.type
+        #         let_expr = let.expr
+        #         if tamanio == contDecl:
+        #             break
+                
         if type(r).__name__ == 'Id':
-            id = self.getAttribute(ctx.expr(1).getText())
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
             if id is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id = self.getAttribute(ctx.expr(0).getText())
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":

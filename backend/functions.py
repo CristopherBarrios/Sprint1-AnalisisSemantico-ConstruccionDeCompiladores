@@ -30,6 +30,20 @@ def buscar_n_elemento(lista, e):
          contador+=1
    return contador
 
+def eliminar_ultimos_elementos(arr, num_elementos):
+    if num_elementos > len(arr):
+        return []
+    else:
+        return arr[:-num_elementos]
+
+def verificaThor(var,arr):
+    existe = None
+    for id in arr:
+        if id.name == var:
+            existe = True
+    return existe
+
+
 
 def printidor(clases,metodos,ownmethod,property,formal,assignment,methodcall,ifcount,equal,lessequal,lessthan,minus,add,division,multiply,whileCount,declaration,letin,void,negative,boolnot,case,new,string,valor,block,id,parentheses,fals,integer,truet,instr,outstring,outint):
         print("\n\nCLASES:\n")

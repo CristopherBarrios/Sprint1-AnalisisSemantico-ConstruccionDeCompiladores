@@ -40,7 +40,7 @@ def verificaThor(var,arr):
     existe = None
     for id in arr:
         if id.name == var:
-            existe = True
+            return id
     return existe
 
 

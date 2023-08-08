@@ -68,27 +68,6 @@ class MyYAPLVisitor(YAPLVisitor):
         self.total_scopes = {}
         self.printidorClases = {}
 
-                    # if self.let_scope != '' and i['kind'] == 'declaration':
-                    #     return i
-    def getAttribute(self, name, scope=None):
-        for i in self.table: 
-            if i['name'] == name:
-                # if self.actual_scope == i['scope'] or self.method_scope == i['scope'] or self.let_scope== i['scope']:
-                #     return i
-                if scope != None and (i['scope'] != self.actual_scope and i['scope'] != self.method_scope and i['scope'] != self.let_scope) and i['scope'] != 'Global':
-                    continue
-                return i
-        return None
-    
-
-    # def getAttribute(self, name, scope=None):
-    #     for i in reversed(self.table): 
-    #         if i['name'] == name:
-    #             if scope != None and (i['scope'] != self.actual_scope and i['scope'] != self.method_scope and i['scope'] != self.let_scope) and i['scope'] != 'Global':
-    #                 continue
-    #             return i
-    #     return None
-
     def visitStart(self, ctx):
         # self.ERRORS = []
         # self.visitChildren(ctx)
@@ -440,22 +419,7 @@ class MyYAPLVisitor(YAPLVisitor):
         return block
 
 
-    def visitNegInteger(self, ctx):
-        ne = self.visit(ctx.expr())
 
-        if type(ne).__name__ == 'Id':
-            id = self.getAttribute(ctx.expr().getText())
-            if id is None:
-                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
-
-        if (type(ne).__name__ != 'Int' and type(ne).__name__ != 'Id'):
-                new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
-        negative = lista.Negative(ne)
-        self.negative.append(negative)
-
-        return negative
 
 
     def visitId(self, ctx):
@@ -513,16 +477,25 @@ class MyYAPLVisitor(YAPLVisitor):
         r = self.visit(ctx.expr(1))
 
         if type(r).__name__ == 'Id':
-            id = self.getAttribute(ctx.expr(1).getText(),self.actual_scope)
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
             if id is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
 
         if type(l).__name__ == 'Id':
-            id = self.getAttribute(ctx.expr(0).getText(),self.actual_scope)
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
             if id is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                self.ERRORS.append(new_error) 
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
@@ -568,16 +541,6 @@ class MyYAPLVisitor(YAPLVisitor):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
-        # if self.let_scope != []:
-        #     tamanio = len(self.let_scope)
-        #     contDecl = 0
-        #     for let in reversed(self.declaration):
-        #         contDecl += 1
-        #         let_name = let.name
-        #         let_type = let.type
-        #         let_expr = let.expr
-        #         if tamanio == contDecl:
-        #             break
                 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
@@ -585,18 +548,18 @@ class MyYAPLVisitor(YAPLVisitor):
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
-                if id['type'] != 'Int':
+                if id.type != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
 
 
         if type(l).__name__ == 'Id':
-            id = self.getAttribute(ctx.expr(0).getText())
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
             if id is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
-                if id['type'] != 'Int':
+                if id.type != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error)   
 
@@ -609,11 +572,39 @@ class MyYAPLVisitor(YAPLVisitor):
         self.multiply.append(multiply)
 
         return multiply
+    
+    def visitNegInteger(self, ctx):
+        ne = self.visit(ctx.expr())
+
+
+        if type(ne).__name__ == 'Id':
+            id  = verificaThor(ctx.expr().getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
+                    self.ERRORS.append(new_error)  
+
+
+        if (type(ne).__name__ != 'Int' and type(ne).__name__ != 'Id'):
+                new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error) 
+        negative = lista.Negative(ne)
+        self.negative.append(negative)
+
+        return negative
 
 
     def visitAssignment(self, ctx):
         name = ctx.ID().getText()
         expr = self.visit(ctx.expr())
+
+        id  = verificaThor(ctx.ID().getText(),self.variables)
+        if id is None:
+            new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.ID().getText())
+            self.ERRORS.append(new_error) 
 
         assignement = lista.Assignment(name,expr)
         self.assignment.append(assignement)

@@ -560,7 +560,7 @@ class MyYAPLVisitor(YAPLVisitor):
         return minus
     
 
-    def visitvDivision(self, ctx):
+    def visitDivision(self, ctx):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 

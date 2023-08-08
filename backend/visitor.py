@@ -199,11 +199,11 @@ class MyYAPLVisitor(YAPLVisitor):
 
     def visitMethod(self, ctx):
         name = ctx.ID().getText()
-        type = None;expr=None
+        tipo = None;expr=None
 
         self.method_scope = name
         if ctx.TYPE():
-            type = ctx.TYPE().getText()
+            tipo = ctx.TYPE().getText()
         self.method_ids += 1
 
         for meto in self.metodos:
@@ -222,7 +222,24 @@ class MyYAPLVisitor(YAPLVisitor):
         if ctx.expr():
             expr = self.visit(ctx.expr())
 
-        metodo = lista.Method(name,self.method_ids,type,formalParams,expr)
+    
+        if type(expr).__name__ == 'Id':
+            if expr.id != "self":
+                id  = verificaThor(expr.id,self.variables)
+                if id is None:
+                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
+                    self.ERRORS.append(new_error)  
+
+        elif type(expr).__name__ == 'Block':
+            for obj in expr.bloc:
+                if type(obj).__name__ == 'Id':
+                    if obj.id != "self":
+                        id  = verificaThor(obj.id,self.variables)
+                        if id is None:
+                            new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,obj.id)
+                            self.ERRORS.append(new_error)  
+
+        metodo = lista.Method(name,self.method_ids,tipo,formalParams,expr)
         self.metodos.append(metodo)
         self.method_scope = ''
 
@@ -234,7 +251,7 @@ class MyYAPLVisitor(YAPLVisitor):
                 new_error = tables.Error("El metodo main no puede contener parametros formales ", ctx.start.line, ctx.start.column)
                 self.ERRORS.append(new_error)              
 
-        if name == type or type == None:
+        if name == tipo or tipo == None:
             new_error = tables.Error("No se puede encontrar type en metodo ", ctx.start.line, ctx.start.column)
             self.ERRORS.append(new_error)
 
@@ -511,6 +528,27 @@ class MyYAPLVisitor(YAPLVisitor):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
 
+        if type(r).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)  
+
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
                 new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.getText())
@@ -525,6 +563,27 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitvDivision(self, ctx):
         l = self.visit(ctx.expr(0))
         r = self.visit(ctx.expr(1))
+
+        if type(r).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(1).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+
+
+        if type(l).__name__ == 'Id':
+            id  = verificaThor(ctx.expr(0).getText(),self.variables)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id.type != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":

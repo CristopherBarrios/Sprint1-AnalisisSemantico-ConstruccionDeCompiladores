@@ -43,6 +43,12 @@ def verificaThor(var,arr):
             return id
     return existe
 
+def encontradorClases(tipo,tabla):
+    for element in tabla:
+        if element['name'] == tipo:
+            return element
+    return None
+
 
 
 def printidor(clases,metodos,ownmethod,property,formal,assignment,methodcall,ifcount,equal,lessequal,lessthan,minus,add,division,multiply,whileCount,declaration,letin,void,negative,boolnot,case,new,string,valor,block,id,parentheses,fals,integer,truet,instr,outstring,outint):

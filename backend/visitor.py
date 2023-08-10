@@ -435,9 +435,14 @@ class MyYAPLVisitor(YAPLVisitor):
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
-                if id.type != 'Int':
+                if id.type != 'Int' and id.type != 'String':
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
+                else:
+                    if type(l).__name__ != id.type:
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)  
+
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -445,14 +450,18 @@ class MyYAPLVisitor(YAPLVisitor):
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
-                if id.type != 'Int':
+                if id.type != 'Int' and id.type != 'String':
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                    self.ERRORS.append(new_error) 
+                    self.ERRORS.append(new_error)
+                else:
+                    if type(r).__name__ != id.type:
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)  
 
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
                 new_error = tables.Error("No corresponden los tipos de la comparacion <", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error) 
+                self.ERRORS.append(new_error)
 
         equal = lista.Equal(l,r)
         self.equal.append(equal)
@@ -527,6 +536,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         add = lista.Add(l,r)
         self.add.append(add)
+
+        return add
 
 
     def visitMinus(self, ctx):
@@ -707,6 +718,13 @@ class MyYAPLVisitor(YAPLVisitor):
 
         expr = self.visit(ctx.expr(0))
 
+        if type(expr).__name__ == 'Id':
+            if expr.id != "self":
+                id  = verificaThor(expr.id,self.variables)
+                if id is None:
+                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
+                    self.ERRORS.append(new_error)  
+
         if ctx.expr(1) is not None:
             expr1 = self.visit(ctx.expr(1))
             if type(expr1).__name__ == 'Id':
@@ -754,6 +772,14 @@ class MyYAPLVisitor(YAPLVisitor):
             argumen = self.visit(f)
             arguments.append(argumen)
         
+        
+        for a in arguments:
+            if type(a).__name__ == 'Id':
+                id = encontradorClases(method,self.table)
+                if id is None:
+                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
+                    self.ERRORS.append(new_error)  
+
         
         if method == "in_string" or method == "in_int":
             instr = lista.In(method)

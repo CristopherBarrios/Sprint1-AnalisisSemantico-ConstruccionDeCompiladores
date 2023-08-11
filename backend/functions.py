@@ -36,6 +36,11 @@ def eliminar_ultimos_elementos(arr, num_elementos):
     else:
         return arr[:-num_elementos]
 
+def parentesis(cadena):
+    if cadena.startswith("(") and cadena.endswith(")"):
+        cadena = cadena[1:-1]
+    return cadena
+    
 def verificaThor(var,arr):
     existe = None
     for id in arr:

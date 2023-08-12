@@ -477,8 +477,21 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error) 
 
+
+        if type(r).__name__ == 'Add':
+            if type(l).__name__ != 'Int':
+                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'Add':
+            if type(r).__name__ != 'Int':
+                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error) 
+
+
+
         if type(l).__name__ != type(r).__name__ :
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'Add' and type(r).__name__ != 'Add':
                 new_error = tables.Error("No corresponden los tipos de la comparacion =", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -548,8 +561,30 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error)   
 
+        if type(r).__name__ == 'IfCount':
+            if type(r.exprThen).__name__ != 'Block':
+                if type(r.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+            if type(r.exprElse).__name__ != 'Block':
+                if type(r.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(l).__name__ == 'IfCount':
+            if type(l.exprThen).__name__ != 'Block':
+                if type(l.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
+            if type(l.exprElse).__name__ != 'Block':
+                if type(l.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)     
+
+
+
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount':
                 new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -868,7 +903,7 @@ class MyYAPLVisitor(YAPLVisitor):
         striLoop = stri
         list_valus = []
 
-        if (len(ctx.getText()) > 17):
+        if (len(ctx.getText()) > 25):
             new_error = tables.Error("Longitud de string excedida", ctx.start.line, ctx.start.column,ctx.getText())
             self.ERRORS.append(new_error)
 

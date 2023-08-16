@@ -31,6 +31,7 @@ class MyYAPLVisitor(YAPLVisitor):
         self.table = table
         self.reservado = ['Object']
         self.palabras = ['self']
+        self.valoresTipos = ['String','Bool','Int']
 
         self.clases = []
         self.metodos = []
@@ -260,17 +261,66 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitAttribute(self, ctx):
         what = ctx.getChild(0)
         name = ctx.ID().getText()
-        type = ctx.TYPE().getText()
+        tipo = ctx.TYPE().getText()
         type2 = ctx.getText()
 
+        if tipo not in self.valoresTipos:
+            id = encontradorClases(tipo,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro el tipo o clase", ctx.start.line, ctx.start.column,ctx.TYPE().getText())
+                self.ERRORS.append(new_error)  
+
         if ctx.ASSIGNMENT() is None:
-            propiedad = lista.Property(name,type,None)
+            propiedad = lista.Property(name,tipo,None)
             self.property.append(propiedad)
             return propiedad
 
         expr = self.visit(ctx.expr())
 
-        propiedad = lista.Property(name,type,expr)
+        if tipo in self.valoresTipos:
+            if type(expr).__name__ == 'Block':
+                for obj in expr.bloc:
+                    if type(obj).__name__ == 'Id':
+                        if obj.id not in self.palabras:
+                            id  = verificaThor(obj.id,self.variables)
+                            if id is None:
+                                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,obj.id)
+                                self.ERRORS.append(new_error)
+
+                    elif type(obj).__name__ == 'Int' or type(obj).__name__ == 'String':
+                        if  tipo != type(obj).__name__:
+                            new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                            self.ERRORS.append(new_error)
+                    elif type(obj).__name__ == 'TrueCount' or type(obj).__name__ == 'FalseCount':
+                        if  tipo != 'Bool':
+                            new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                            self.ERRORS.append(new_error)  
+            else:
+                if type(expr).__name__ == 'Id':
+                    if expr.id not in self.palabras:
+                        id  = verificaThor(expr.id,self.variables)
+                        if id is None:
+                            new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
+                            self.ERRORS.append(new_error)
+                        else:
+                            if  tipo != id.type:
+                                new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                                self.ERRORS.append(new_error)
+                elif type(expr).__name__ == 'String' or type(expr).__name__ == 'Int':
+                    if  tipo != type(expr).__name__:
+                        new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                        self.ERRORS.append(new_error)
+                elif type(expr).__name__ == 'TrueCount' or type(expr).__name__ == 'FalseCount':
+                    if  tipo != 'Bool':
+                        new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                        self.ERRORS.append(new_error)    
+
+                elif type(expr).__name__ == "Add" or type(expr).__name__ == "Division" or type(expr).__name__ == "Multiply" or type(expr).__name__ == "Minus":
+                    if tipo != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                        self.ERRORS.append(new_error)
+
+        propiedad = lista.Property(name,tipo,expr)
         self.property.append(propiedad)
         return propiedad
 

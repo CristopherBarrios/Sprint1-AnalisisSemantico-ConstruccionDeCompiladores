@@ -29,6 +29,8 @@ class MyYAPLVisitor(YAPLVisitor):
         self.scopes = []
         self.variables = []
         self.table = table
+        self.reservado = ['Object']
+        self.palabras = ['self']
 
         self.clases = []
         self.metodos = []
@@ -439,7 +441,7 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
                 else:
-                    if type(l).__name__ != id.type:
+                    if type(l).__name__ != id.type and type(l).__name__ !="Minus" and type(l).__name__ != 'Add' and type(l).__name__ != 'Division' and type(l).__name__ != 'Multiply': 
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                         self.ERRORS.append(new_error)  
 
@@ -453,7 +455,7 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error)
                 else:
-                    if type(r).__name__ != id.type and type(r).__name__ !="Minus":
+                    if type(r).__name__ != id.type and type(r).__name__ !="Minus" and type(r).__name__ != 'Add' and type(r).__name__ != 'Division' and type(r).__name__ != 'Multiply':
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                         self.ERRORS.append(new_error)  
 
@@ -477,21 +479,18 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error) 
 
-
-        if type(r).__name__ == 'Add':
+        if type(r).__name__ == 'Add' or type(r).__name__ == 'Minus' or type(r).__name__ == 'Division' or type(r).__name__ == 'Multiply':
             if type(l).__name__ != 'Int':
                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
 
-        if type(l).__name__ == 'Add':
+        if type(l).__name__ == 'Add' or type(l).__name__ == 'Minus' or type(l).__name__ == 'Division' or type(l).__name__ == 'Multiply':
             if type(r).__name__ != 'Int':
                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error) 
 
-
-
         if type(l).__name__ != type(r).__name__ :
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'Add' and type(r).__name__ != 'Add':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'Add' and type(r).__name__ != 'Add' and type(l).__name__ != 'Minus' and type(r).__name__ != 'Minus' and type(l).__name__ != 'Division' and type(r).__name__ != 'Division' and type(l).__name__ != 'Multiply' and type(r).__name__ != 'Multiply':
                 new_error = tables.Error("No corresponden los tipos de la comparacion =", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -550,7 +549,6 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
 
-
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
             if id is None:
@@ -579,12 +577,30 @@ class MyYAPLVisitor(YAPLVisitor):
             if type(l.exprElse).__name__ != 'Block':
                 if type(l.exprElse).__name__ != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                    self.ERRORS.append(new_error)     
+                    self.ERRORS.append(new_error)
 
+        if type(r).__name__ == 'OwnMethod':
+            id  = encontradorClases(r.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error) 
 
+        if type(l).__name__ == 'OwnMethod':
+            id  = encontradorClases(l.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
                 new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -608,7 +624,6 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
 
-
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
             if id is None:
@@ -618,6 +633,26 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id.type != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error) 
+
+        if type(r).__name__ == 'IfCount':
+            if type(r.exprThen).__name__ != 'Block':
+                if type(r.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+            if type(r.exprElse).__name__ != 'Block':
+                if type(r.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(l).__name__ == 'IfCount':
+            if type(l.exprThen).__name__ != 'Block':
+                if type(l.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
+            if type(l.exprElse).__name__ != 'Block':
+                if type(l.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)
 
         if type(r).__name__ == 'OwnMethod':
             id  = encontradorClases(r.method,self.table)
@@ -640,7 +675,7 @@ class MyYAPLVisitor(YAPLVisitor):
                     self.ERRORS.append(new_error) 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
                 new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
         
@@ -674,8 +709,48 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                     self.ERRORS.append(new_error) 
 
+        if type(r).__name__ == 'IfCount':
+            if type(r.exprThen).__name__ != 'Block':
+                if type(r.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)   
+            if type(r.exprElse).__name__ != 'Block':
+                if type(r.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(l).__name__ == 'IfCount':
+            if type(l.exprThen).__name__ != 'Block':
+                if type(l.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
+            if type(l.exprElse).__name__ != 'Block':
+                if type(l.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(r).__name__ == 'OwnMethod':
+            id  = encontradorClases(r.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'OwnMethod':
+            id  = encontradorClases(l.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
+
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
                 new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
 
@@ -707,10 +782,50 @@ class MyYAPLVisitor(YAPLVisitor):
             else:
                 if id.type != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(r).__name__ == 'IfCount':
+            if type(r.exprThen).__name__ != 'Block':
+                if type(r.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                     self.ERRORS.append(new_error)   
+            if type(r.exprElse).__name__ != 'Block':
+                if type(r.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(l).__name__ == 'IfCount':
+            if type(l.exprThen).__name__ != 'Block':
+                if type(l.exprThen).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)   
+            if type(l.exprElse).__name__ != 'Block':
+                if type(l.exprElse).__name__ != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error)
+
+        if type(r).__name__ == 'OwnMethod':
+            id  = encontradorClases(r.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                    self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'OwnMethod':
+            id  = encontradorClases(l.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                    self.ERRORS.append(new_error) 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
                 new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)   
 
@@ -727,6 +842,7 @@ class MyYAPLVisitor(YAPLVisitor):
         
         if tipo is not None:
             id = encontradorClases(tipo,self.table)
+            if tipo in self.reservado: id = {'kind': 1}
             if id is None:
                 new_error = tables.Error("No ha encontrado la clase", ctx.start.line, ctx.start.column,tipo)
                 self.ERRORS.append(new_error) 
@@ -747,7 +863,7 @@ class MyYAPLVisitor(YAPLVisitor):
     def visitNegation(self, ctx):
         bn = self.visit(ctx.expr())
 
-        if (type(bn).__name__ != 'TrueCount' and type(bn).__name__ != 'FalseCount' and type(bn).__name__ != 'Id'):
+        if (type(bn).__name__ != 'TrueCount' and type(bn).__name__ != 'FalseCount' and type(bn).__name__ != 'Id' and type(bn).__name__ != 'MethodCall'):
                 new_error = tables.Error("No corresponden los tipos del not", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -777,13 +893,36 @@ class MyYAPLVisitor(YAPLVisitor):
         self.negative.append(negative)
 
         return negative
+    
+    def visitIsVoid(self, ctx):
+        vo = self.visit(ctx.expr())
+
+        if type(vo).__name__ == 'Id':
+            id  = verificaThor(ctx.expr().getText(),self.variables)
+            if vo.id in self.palabras: id = {'kind': 1}
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr().getText())
+                self.ERRORS.append(new_error) 
+            # else:
+            #     if id.type != 'Int':
+            #         new_error = tables.Error("No corresponden los tipos de void", ctx.start.line, ctx.start.column,vo)
+            #         self.ERRORS.append(new_error)  
+
+        if (type(vo).__name__ != 'Id'):
+                new_error = tables.Error("No corresponden los tipos de la void", ctx.start.line, ctx.start.column,vo)
+                self.ERRORS.append(new_error) 
+
+        void = lista.Isvoid(vo)
+        self.void.append(void)
+
+        return void
 
 
     def visitDispatch(self, ctx):
         name = ctx.ID().getText()
         tipo = None; expr1 = None; expr2 = None
 
-        if name != "in_string" and name != "in_int" and name != "out_string" and name != "out_int" and name != "concat" and name != "length" and name != "substr":
+        if name != "in_string" and name != "in_int" and name != "out_string" and name != "out_int" and name != "concat" and name != "length" and name != "substr" and name != "type_name" and name != "abort":
             id = encontradorClases(name,self.table)
             if id is None:
                 new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.ID().getText())
@@ -837,7 +976,7 @@ class MyYAPLVisitor(YAPLVisitor):
         instance = "self"
         method = ctx.ID().getText()
 
-        if method != "in_string" and method != "in_int" and method != "out_string" and method != "out_int" and method != "concat" and method != "length" and method != "substr":
+        if method != "in_string" and method != "in_int" and method != "out_string" and method != "out_int" and method != "concat" and method != "length" and method != "substr" and method != "type_name" and method != "abort":
             id = encontradorClases(method,self.table)
             if id is None:
                 new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.getText())
@@ -851,7 +990,7 @@ class MyYAPLVisitor(YAPLVisitor):
         
         for a in arguments:
             if type(a).__name__ == 'Id':
-                id = encontradorClases(method,self.table)
+                id  = verificaThor(a.id,self.variables)
                 if id is None:
                     new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
                     self.ERRORS.append(new_error)  
@@ -921,13 +1060,7 @@ class MyYAPLVisitor(YAPLVisitor):
         return string
 
 
-    def visitIsVoid(self, ctx):
-        vo = self.visit(ctx.expr())
 
-        void = lista.Isvoid(vo)
-        self.void.append(void)
-
-        return void
 
 
     def visitTrue(self, ctx):

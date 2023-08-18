@@ -31,6 +31,7 @@ class MyYAPLVisitor(YAPLVisitor):
         self.table = table
         self.reservado = ['Object']
         self.palabras = ['self']
+        self.metodo_reservado = {'length':'Int','substr':'String'}
         self.valoresTipos = ['String','Bool','Int']
 
         self.clases = []
@@ -527,20 +528,52 @@ class MyYAPLVisitor(YAPLVisitor):
             else:
                 if id['type'] != 'Int' and id['type'] != 'String':
                     new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                    self.ERRORS.append(new_error) 
+                    self.ERRORS.append(new_error)
+        
+        if type(r).__name__ == 'MethodCall':
+            id  = encontradorClases(r.name,self.table)
+            metodoReserv, tipoReserv =  encontradorMetodosReservados(r.name,self.metodo_reservado)
+            if id is None and metodoReserv is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if metodoReserv is None:
+                    if id['type'] != 'Int' and id['type'] != 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error) 
+                else:
+                    if tipoReserv != 'Int' and tipoReserv != 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'MethodCall':
+            id  = encontradorClases(l.name,self.table)
+            metodoReserv, tipoReserv =  encontradorMetodosReservados(l.name,self.metodo_reservado)
+            if id is None and metodoReserv is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if metodoReserv is None:
+                    if id['type'] != 'Int' and id['type'] != 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error) 
+                else:
+                    if tipoReserv != 'Int' and tipoReserv != 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error) 
 
         if type(r).__name__ == 'Add' or type(r).__name__ == 'Minus' or type(r).__name__ == 'Division' or type(r).__name__ == 'Multiply':
-            if type(l).__name__ != 'Int':
+            if type(l).__name__ != 'Int' and type(l).__name__ != 'Id':
                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
 
         if type(l).__name__ == 'Add' or type(l).__name__ == 'Minus' or type(l).__name__ == 'Division' or type(l).__name__ == 'Multiply':
-            if type(r).__name__ != 'Int':
+            if type(r).__name__ != 'Int' and type(r).__name__ != 'Id':
                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error) 
 
         if type(l).__name__ != type(r).__name__ :
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'Add' and type(r).__name__ != 'Add' and type(l).__name__ != 'Minus' and type(r).__name__ != 'Minus' and type(l).__name__ != 'Division' and type(r).__name__ != 'Division' and type(l).__name__ != 'Multiply' and type(r).__name__ != 'Multiply':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'Add' and type(r).__name__ != 'Add' and type(l).__name__ != 'Minus' and type(r).__name__ != 'Minus' and type(l).__name__ != 'Division' and type(r).__name__ != 'Division' and type(l).__name__ != 'Multiply' and type(r).__name__ != 'Multiply' and type(l).__name__ != 'MethodCall' and type(r).__name__ != 'MethodCall':
                 new_error = tables.Error("No corresponden los tipos de la comparacion =", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
 
@@ -722,10 +755,42 @@ class MyYAPLVisitor(YAPLVisitor):
             else:
                 if id['type'] != 'Int':
                     new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                    self.ERRORS.append(new_error) 
+                    self.ERRORS.append(new_error)
+
+        if type(r).__name__ == 'MethodCall':
+            id  = encontradorClases(r.name,self.table)
+            metodoReserv, tipoReserv =  encontradorMetodosReservados(r.name,self.metodo_reservado)
+            if id is None and metodoReserv is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if metodoReserv is None:
+                    if id['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error) 
+                else:
+                    if tipoReserv != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error) 
+
+        if type(l).__name__ == 'MethodCall':
+            id  = encontradorClases(l.name,self.table)
+            metodoReserv, tipoReserv =  encontradorMetodosReservados(l.name,self.metodo_reservado)
+            if id is None and metodoReserv is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                self.ERRORS.append(new_error)
+            else:
+                if metodoReserv is None:
+                    if id['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error) 
+                else:
+                    if tipoReserv != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error) 
 
         if type(l).__name__ !=  "Int" or type(r).__name__ !=  "Int":
-            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod':
+            if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id" and type(l).__name__ != 'IfCount' and type(r).__name__ != 'IfCount' and type(l).__name__ != 'OwnMethod'and type(r).__name__ != 'OwnMethod' and type(l).__name__ != 'MethodCall' and type(r).__name__ != 'MethodCall':
                 new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error)
         
@@ -1008,11 +1073,13 @@ class MyYAPLVisitor(YAPLVisitor):
         if ctx.expr(2) is not None:
             expr2 = self.visit(ctx.expr(2))
 
+        idC = encontradorClases(name,self.table)
+        if idC is not None:
+            numero = contadorDeParametros(name,idC['line'],self.table)
+            params = obtenerParametros(name,idC['line'],self.table)
+
         if name != "in_string" and name != "in_int" and name != "out_string" and name != "out_int" and name != "concat" and name != "length" and name != "substr" and name != "type_name" and name != "abort":
-            id = encontradorClases(name,self.table)
-            numero = contadorDeParametros(name,id['line'],self.table)
-            params = obtenerParametros(name,id['line'],self.table)
-            if id is None:
+            if idC is None:
                 new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.ID().getText())
                 self.ERRORS.append(new_error) 
             elif numero != len(ctx.expr()) - 1:
@@ -1032,24 +1099,39 @@ class MyYAPLVisitor(YAPLVisitor):
                         new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
                         self.ERRORS.append(new_error)
                     else:
+                        if idC is not None:
+                            for p in params:
+                                if id.type != p['type']:
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                    self.ERRORS.append(new_error)
+                                    params.pop(0)
+                                else:
+                                    params.pop(0)
+                if type(a).__name__ == 'MethodCall':
+                    if idC is not None:
                         for p in params:
-                            if id.type != p['type']:
-                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
-                                self.ERRORS.append(new_error)
-                                params.pop(0)
+                            id = encontradorClases(a.name,self.table)
+                            if id is not None:
+                                if id['type']!= p['type']:
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                    self.ERRORS.append(new_error)
+                                    params.pop(0)
+                                    break
+                                else:
+                                    params.pop(0)
+                                    break
+
+                if type(a).__name__ == 'Minus' or type(a).__name__ == 'Add' or type(a).__name__ == 'Division' or type(a).__name__ == 'Multiply' or type(a).__name__ == 'Negative' or type(a).__name__ == 'Int':
+                    if idC is not None:
+                        for p in params:
+                            if p['type'] != 'Int':
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                    self.ERRORS.append(new_error)
+                                    params.pop(0)
+                                    break
                             else:
                                 params.pop(0)
-                if type(a).__name__ == 'MethodCall':
-                    for p in params:
-                        id = encontradorClases(a.name,self.table)
-                        if id['type']!= p['type']:
-                            new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
-                            self.ERRORS.append(new_error)
-                            params.pop(0)
-                            break
-                        else:
-                            params.pop(0)
-                            break
+                                break       
         else:
             if type(expr1).__name__ == 'Id':
                 id  = verificaThor(expr1.id,self.variables)
@@ -1057,10 +1139,37 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
                     self.ERRORS.append(new_error)
                 else:
+                    if idC is not None:
+                        for p in params:
+                            if id.type != p['type']:
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                self.ERRORS.append(new_error)
+
+            if type(expr1).__name__ == 'MethodCall':
+                if idC is not None:
                     for p in params:
-                        if id.type != p['type']:
-                            new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
-                            self.ERRORS.append(new_error)
+                        id = encontradorClases(expr1.name,self.table)
+                        if id is not None:
+                            if id['type']!= p['type']:
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                self.ERRORS.append(new_error)
+                                params.pop(0)
+                                break
+                            else:
+                                params.pop(0)
+                                break
+
+            if type(expr1).__name__ == 'Minus' or type(expr1).__name__ == 'Add' or type(expr1).__name__ == 'Division' or type(expr1).__name__ == 'Multiply' or type(expr1).__name__ == 'Negative' or type(expr1).__name__ == 'Int':
+                if idC is not None:
+                    for p in params:
+                        if p['type'] != 'Int':
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                self.ERRORS.append(new_error)
+                                params.pop(0)
+                                break
+                        else:
+                            params.pop(0)
+                            break      
 
 
         if name == "in_string" or name == "in_int":
@@ -1105,8 +1214,6 @@ class MyYAPLVisitor(YAPLVisitor):
                 new_error = tables.Error("la cantidad de elementos no coincide con los del metodo", ctx.start.line, ctx.start.column,method)
                 self.ERRORS.append(new_error)
 
-
-        
         for a in arguments:
             if type(a).__name__ == 'Id':
                 id  = verificaThor(a.id,self.variables)
@@ -1119,6 +1226,37 @@ class MyYAPLVisitor(YAPLVisitor):
                             if id.type != p['type']:
                                 new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
                                 self.ERRORS.append(new_error)
+                                params.pop(0)
+                                break
+                            else:
+                                params.pop(0)
+                                break
+
+            if type(a).__name__ == 'MethodCall':
+                if idC is not None:
+                    for p in params:
+                        id = encontradorClases(a.name,self.table)
+                        if id is not None:
+                            if id['type']!= p['type']:
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                self.ERRORS.append(new_error)
+                                params.pop(0)
+                                break
+                            else:
+                                params.pop(0)
+                                break
+
+            if type(a).__name__ == 'Minus' or type(a).__name__ == 'Add' or type(a).__name__ == 'Division' or type(a).__name__ == 'Multiply' or type(a).__name__ == 'Negative' or type(a).__name__ == 'Int':
+                if idC is not None:
+                    for p in params:
+                        if p['type'] != 'Int':
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                self.ERRORS.append(new_error)
+                                params.pop(0)
+                                break
+                        else:
+                            params.pop(0)
+                            break
 
         if method == "in_string" or method == "in_int":
             instr = lista.In(method)

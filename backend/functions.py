@@ -74,6 +74,12 @@ def comprobador(name,scope,tabla):
             return False
     return True
 
+def encontradorMetodosReservados(name,tabla):
+    for metodo, tipo in tabla.items():
+        if metodo == name:
+            return metodo, tipo
+    return None
+
 
 
 

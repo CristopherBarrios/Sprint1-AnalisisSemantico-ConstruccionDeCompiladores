@@ -972,14 +972,20 @@ class MyYAPLVisitor(YAPLVisitor):
         name = ctx.ID().getText()
         tipo = None; expr1 = None; expr2 = None
 
-        if name != "in_string" and name != "in_int" and name != "out_string" and name != "out_int" and name != "concat" and name != "length" and name != "substr" and name != "type_name" and name != "abort":
-            id = encontradorClases(name,self.table)
-            if id is None:
-                new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.ID().getText())
-                self.ERRORS.append(new_error)  
-        
         if ctx.TYPE() is not None:
             tipo = ctx.TYPE().getText()
+            id = encontradorClases(tipo,self.table)
+            if tipo in self.reservado: id = {'kind': 1}
+            if id is None:
+                new_error = tables.Error("No ha encontrado la clase", ctx.start.line, ctx.start.column,tipo)
+                self.ERRORS.append(new_error)
+            elif comprobador(name,tipo,self.table):
+                    new_error = tables.Error("El metodo no se encuentra dentro de la clase", ctx.start.line, ctx.start.column,tipo)
+                    self.ERRORS.append(new_error) 
+            else:
+                if id['kind'] != 1:
+                    new_error = tables.Error("No corresponde la llamada", ctx.start.line, ctx.start.column,tipo)
+                    self.ERRORS.append(new_error) 
 
         expr = self.visit(ctx.expr(0))
 
@@ -1001,6 +1007,61 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if ctx.expr(2) is not None:
             expr2 = self.visit(ctx.expr(2))
+
+        if name != "in_string" and name != "in_int" and name != "out_string" and name != "out_int" and name != "concat" and name != "length" and name != "substr" and name != "type_name" and name != "abort":
+            id = encontradorClases(name,self.table)
+            numero = contadorDeParametros(name,id['line'],self.table)
+            params = obtenerParametros(name,id['line'],self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.ID().getText())
+                self.ERRORS.append(new_error) 
+            elif numero != len(ctx.expr()) - 1:
+                new_error = tables.Error("la cantidad de elementos no coincide con los del metodo", ctx.start.line, ctx.start.column,name)
+                self.ERRORS.append(new_error) 
+
+        if len(ctx.expr()) - 1 > 1:
+            arguments = []
+            for f in ctx.expr():
+                argumen = self.visit(f)
+                arguments.append(argumen)
+            arguments.pop(0)
+            for a in arguments:
+                if type(a).__name__ == 'Id':
+                    id  = verificaThor(a.id,self.variables)
+                    if id is None:
+                        new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
+                        self.ERRORS.append(new_error)
+                    else:
+                        for p in params:
+                            if id.type != p['type']:
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                self.ERRORS.append(new_error)
+                                params.pop(0)
+                            else:
+                                params.pop(0)
+                if type(a).__name__ == 'MethodCall':
+                    for p in params:
+                        id = encontradorClases(a.name,self.table)
+                        if id['type']!= p['type']:
+                            new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                            self.ERRORS.append(new_error)
+                            params.pop(0)
+                            break
+                        else:
+                            params.pop(0)
+                            break
+        else:
+            if type(expr1).__name__ == 'Id':
+                id  = verificaThor(expr1.id,self.variables)
+                if id is None:
+                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
+                    self.ERRORS.append(new_error)
+                else:
+                    for p in params:
+                        if id.type != p['type']:
+                            new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                            self.ERRORS.append(new_error)
+
 
         if name == "in_string" or name == "in_int":
             instr = lista.In(name)
@@ -1026,26 +1087,39 @@ class MyYAPLVisitor(YAPLVisitor):
         instance = "self"
         method = ctx.ID().getText()
 
-        if method != "in_string" and method != "in_int" and method != "out_string" and method != "out_int" and method != "concat" and method != "length" and method != "substr" and method != "type_name" and method != "abort":
-            id = encontradorClases(method,self.table)
-            if id is None:
-                new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.getText())
-                self.ERRORS.append(new_error)  
-
         arguments = []
         for f in ctx.expr():
             argumen = self.visit(f)
             arguments.append(argumen)
-        
+
+        idC = encontradorClases(method,self.table)
+        if idC is not None:
+            numero = contadorDeParametros(method,idC['line'],self.table)
+            params = obtenerParametros(method,idC['line'],self.table)
+
+        if method != "in_string" and method != "in_int" and method != "out_string" and method != "out_int" and method != "concat" and method != "length" and method != "substr" and method != "type_name" and method != "abort":
+            if idC is None:
+                new_error = tables.Error("No se declaro el metodo", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error)  
+            elif numero != len(arguments):
+                new_error = tables.Error("la cantidad de elementos no coincide con los del metodo", ctx.start.line, ctx.start.column,method)
+                self.ERRORS.append(new_error)
+
+
         
         for a in arguments:
             if type(a).__name__ == 'Id':
                 id  = verificaThor(a.id,self.variables)
                 if id is None:
                     new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
-                    self.ERRORS.append(new_error)  
+                    self.ERRORS.append(new_error)
+                else:
+                    if idC is not None:
+                        for p in params:
+                            if id.type != p['type']:
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                self.ERRORS.append(new_error)
 
-        
         if method == "in_string" or method == "in_int":
             instr = lista.In(method)
             self.instr.append(instr)

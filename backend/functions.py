@@ -54,6 +54,27 @@ def encontradorClases(tipo,tabla):
             return element
     return None
 
+def contadorDeParametros(scope,linea,tabla):
+    cont = 0
+    for element in tabla:
+        if element['scope'] == scope and element['kind'] == 'parameter' and element['line'] == linea:
+            cont += 1
+    return cont
+
+def obtenerParametros(scope,linea,tabla):
+    cont = []
+    for element in tabla:
+        if element['scope'] == scope and element['kind'] == 'parameter' and element['line'] == linea:
+            cont.append(element)
+    return cont
+
+def comprobador(name,scope,tabla):
+    for element in tabla:
+        if element['name'] == name and element['scope'] == scope:
+            return False
+    return True
+
+
 
 
 def printidor(clases,metodos,ownmethod,property,formal,assignment,methodcall,ifcount,equal,lessequal,lessthan,minus,add,division,multiply,whileCount,declaration,letin,void,negative,boolnot,case,new,string,valor,block,id,parentheses,fals,integer,truet,instr,outstring,outint):

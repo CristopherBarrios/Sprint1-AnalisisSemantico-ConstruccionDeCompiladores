@@ -4,13 +4,31 @@ from tabulate import tabulate
 
 class Symbol:
     def __init__(self):
-        self.table = []
         self.scopes = [GLOBAL]
         self.custom_error_listener = Error()
         self.ERRORS = self.custom_error_listener.ERRORS
+        self.table = []
+        self.reserv = [{'name':'out_string','type':'SELF_TYPE','kind':'','scope':'','line':'1','value':''},
+                                  {'name':'x','type':'String','kind':'parameter','scope':'out_string','line':'1','value':''},
+                                  {'name':'out_int','type':'SELF_TYPE','kind':'','scope':'','line':'2','value':''},
+                                  {'name':'x','type':'Int','kind':'parameter','scope':'out_int','line':'2','value':''},
+                                  {'name':'in_string','type':'String','kind':'','scope':'','line':'3','value':''},
+                                  {'name':'in_int','type':'Int','kind':'','scope':'','line':'4','value':''},
+                                  {'name':'abort','type':'Object','kind':'','scope':'','line':'5','value':''},
+                                  {'name':'type_name','type':'String','kind':'','scope':'','line':'6','value':''},
+                                  {'name':'copy','type':'SELF_TYPE','kind':'','scope':'','line':'7','value':''},
+                                  {'name':'length','type':'Int','kind':'','scope':'','line':'8','value':''},
+                                  {'name':'concat','type':'String','kind':'','scope':'','line':'9','value':''},
+                                  {'name':'s','type':'String','kind':'parameter','scope':'concat','line':'9','value':''},
+                                  {'name':'substr','type':'String','kind':'','scope':'','line':'10','value':''},
+                                  {'name':'i','type':'Int','kind':'parameter','scope':'substr','line':'10','value':''},
+                                  {'name':'l','type':'Int','kind':'parameter','scope':'substr','line':'10','value':''}]
 
     def getTable(self):
         return self.table
+    
+    def getReserva(self):
+        return self.reserv
     
     def push_scope(self, scope):
         self.scopes.append(scope)

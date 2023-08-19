@@ -96,6 +96,7 @@ def get_code():
         walker = ParseTreeWalker()
         walker.walk(listenator, tree)
         table = listenator.getTable()
+        metod = listenator.getReserv()
 
         print("")
         print("----------------------------------------------------")
@@ -122,7 +123,7 @@ def get_code():
 
 
 
-        visitonator = Visitor.MyYAPLVisitor(table)
+        visitonator = Visitor.MyYAPLVisitor(table,metod)
         visitonator.visit(tree)
         errors = visitonator.ERRORS
 

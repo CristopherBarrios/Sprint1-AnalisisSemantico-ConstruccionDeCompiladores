@@ -10,6 +10,7 @@ from backend.help import *
 class MyYAPLListener(YAPLListener):
     def __init__(self):
         self.symbol_table = Symbol()
+        self.symbol_reserv = Symbol()
         self.ERRORS = self.symbol_table.ERRORS
         self.letnum = 0
 
@@ -88,6 +89,9 @@ class MyYAPLListener(YAPLListener):
 
     def getTable(self):
         return self.symbol_table.getTable()
+    
+    def getReserv(self):
+        return self.symbol_reserv.getReserva()
 
     def enterClass_exp(self, ctx):
         self.insert_class(ctx)

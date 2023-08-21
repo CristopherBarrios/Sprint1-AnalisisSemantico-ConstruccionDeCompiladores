@@ -237,7 +237,8 @@ class MyYAPLVisitor(YAPLVisitor):
         if type(expr).__name__ == 'Id':
             if expr.id != "self":
                 id  = verificaThor(expr.id,self.variables)
-                if id is None:
+                Hered = verificaLoki(expr.id,self.herencias)
+                if id is None and Hered is None:
                     new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
                     self.ERRORS.append(new_error)  
 
@@ -246,7 +247,8 @@ class MyYAPLVisitor(YAPLVisitor):
                 if type(obj).__name__ == 'Id':
                     if obj.id != "self":
                         id  = verificaThor(obj.id,self.variables)
-                        if id is None:
+                        Hered = verificaLoki(obj.id,self.herencias)
+                        if id is None and Hered is None:
                             new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,obj.id)
                             self.ERRORS.append(new_error)  
 
@@ -294,7 +296,8 @@ class MyYAPLVisitor(YAPLVisitor):
                     if type(obj).__name__ == 'Id':
                         if obj.id not in self.palabras:
                             id  = verificaThor(obj.id,self.variables)
-                            if id is None:
+                            Hered = verificaLoki(obj.id,self.herencias)
+                            if id is None and Hered is None:
                                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,obj.id)
                                 self.ERRORS.append(new_error)
 
@@ -310,7 +313,8 @@ class MyYAPLVisitor(YAPLVisitor):
                 if type(expr).__name__ == 'Id':
                     if expr.id not in self.palabras:
                         id  = verificaThor(expr.id,self.variables)
-                        if id is None:
+                        Hered = verificaLoki(expr.id,self.herencias)
+                        if id is None and Hered is None:
                             new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
                             self.ERRORS.append(new_error)
                         else:
@@ -367,7 +371,8 @@ class MyYAPLVisitor(YAPLVisitor):
         expr = self.visit(ctx.expr())
 
         id  = verificaThor(ctx.ID().getText(),self.variables)
-        if id is None:
+        Hered = verificaLoki(ctx.ID().getText(),self.herencias)
+        if id is None and Hered is None:
             new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.ID().getText())
             self.ERRORS.append(new_error) 
 
@@ -460,7 +465,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -470,7 +476,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -494,7 +501,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -508,7 +516,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -599,7 +608,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -609,7 +619,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -634,7 +645,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -644,13 +656,20 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
-                if id.type != 'Int':
-                    new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                    self.ERRORS.append(new_error)   
+                if id is not None:
+                    if id.type != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
+
 
         if type(r).__name__ == 'IfCount':
             if type(r.exprThen).__name__ != 'Block':
@@ -709,7 +728,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -719,7 +739,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -816,7 +837,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -826,7 +848,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -891,7 +914,8 @@ class MyYAPLVisitor(YAPLVisitor):
      
         if type(r).__name__ == 'Id':
             id  = verificaThor(ctx.expr(1).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(1).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -901,7 +925,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr(0).getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                 self.ERRORS.append(new_error)
             else:
@@ -1003,7 +1028,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(ne).__name__ == 'Id':
             id  = verificaThor(ctx.expr().getText(),self.variables)
-            if id is None:
+            Hered = verificaLoki(ctx.expr().getText(),self.herencias)
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
             else:
@@ -1034,8 +1060,9 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if type(vo).__name__ == 'Id':
             id  = verificaThor(ctx.expr().getText(),self.variables)
+            Hered = verificaLoki(ctx.expr().getText(),self.herencias)
             if vo.id in self.palabras: id = {'kind': 1}
-            if id is None:
+            if id is None and Hered is None:
                 new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr().getText())
                 self.ERRORS.append(new_error) 
             # else:
@@ -1087,7 +1114,8 @@ class MyYAPLVisitor(YAPLVisitor):
             if type(expr1).__name__ == 'Id':
                 if expr1.id != "self":
                     id  = verificaThor(expr1.id,self.variables)
-                    if id is None:
+                    Hered = verificaLoki(expr1.id,self.herencias)
+                    if id is None and Hered is None:
                         new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
                         self.ERRORS.append(new_error)  
 
@@ -1124,8 +1152,9 @@ class MyYAPLVisitor(YAPLVisitor):
             for a in arguments:
                 if type(a).__name__ == 'Id':
                     id  = verificaThor(a.id,self.variables)
+                    Hered = verificaLoki(a.id,self.herencias)
                     if a.id not in self.palabras:
-                        if id is None:
+                        if id is None and Hered is None:
                             new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
                             self.ERRORS.append(new_error)
                         else:
@@ -1189,8 +1218,9 @@ class MyYAPLVisitor(YAPLVisitor):
         else:
             if type(expr1).__name__ == 'Id':
                 id  = verificaThor(expr1.id,self.variables)
+                Hered = verificaLoki(expr1.id,self.herencias)
                 if expr1.id not in self.palabras:
-                    if id is None:
+                    if id is None and Hered is None:
                         new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
                         self.ERRORS.append(new_error)
                     else:
@@ -1303,8 +1333,9 @@ class MyYAPLVisitor(YAPLVisitor):
         for a in arguments:
             if type(a).__name__ == 'Id':
                 id  = verificaThor(a.id,self.variables)
+                Hered = verificaLoki(a.id,self.herencias)
                 if a.id not in self.palabras:
-                    if id is None:
+                    if id is None and Hered is None:
                         new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
                         self.ERRORS.append(new_error)
                     else:

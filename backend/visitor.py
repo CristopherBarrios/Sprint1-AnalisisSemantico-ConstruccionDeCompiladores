@@ -31,8 +31,10 @@ class MyYAPLVisitor(YAPLVisitor):
         self.table = table
         self.metodos_reservado = metod
         self.reservado = ['Object']
+        self.io = ['IO']
         self.palabras = ['self']
         self.valoresTipos = ['String','Bool','Int']
+        self.herencias = []
 
         self.clases = []
         self.metodos = []
@@ -164,6 +166,12 @@ class MyYAPLVisitor(YAPLVisitor):
         if len(ctx.TYPE()) > 1:
             parent = ctx.TYPE(1).getText()
 
+            if parent not in self.io:
+                if parent not in self.valoresTipos:
+                    self.herencias = atributosHeredados(parent,self.table)
+                    
+
+
         features = []
         propertyCount = 0
         for f in ctx.feature():
@@ -184,6 +192,8 @@ class MyYAPLVisitor(YAPLVisitor):
 
         if propertyCount != 0:
             self.variables = eliminar_ultimos_elementos(self.variables, propertyCount)
+        
+        self.herencias = []
 
         if ctx.INHERITS():
             if class_name == "Main":
@@ -1001,7 +1011,17 @@ class MyYAPLVisitor(YAPLVisitor):
                     new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
                     self.ERRORS.append(new_error)  
 
-        if (type(ne).__name__ != 'Int' and type(ne).__name__ != 'Id'):
+        if type(ne).__name__ == 'OwnMethod':
+            id  = encontradorClases(ne.method,self.table)
+            if id is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.getText())
+                self.ERRORS.append(new_error)
+            else:
+                if id['type'] != 'Int':
+                    new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.getText())
+                    self.ERRORS.append(new_error) 
+
+        if (type(ne).__name__ != 'Int' and type(ne).__name__ != 'Id' and type(ne).__name__ != 'OwnMethod'):
                 new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
                 self.ERRORS.append(new_error) 
         negative = lista.Negative(ne)
@@ -1057,7 +1077,8 @@ class MyYAPLVisitor(YAPLVisitor):
         if type(expr).__name__ == 'Id':
             if expr.id != "self":
                 id  = verificaThor(expr.id,self.variables)
-                if id is None:
+                Hered = verificaLoki(expr.id,self.herencias)
+                if id is None and Hered is None:
                     new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr.id)
                     self.ERRORS.append(new_error)  
 
@@ -1103,18 +1124,19 @@ class MyYAPLVisitor(YAPLVisitor):
             for a in arguments:
                 if type(a).__name__ == 'Id':
                     id  = verificaThor(a.id,self.variables)
-                    if id is None:
-                        new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
-                        self.ERRORS.append(new_error)
-                    else:
-                        if idC is not None:
-                            for p in params:
-                                if id.type != p['type']:
-                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
-                                    self.ERRORS.append(new_error)
-                                    params.pop(0)
-                                else:
-                                    params.pop(0)
+                    if a.id not in self.palabras:
+                        if id is None:
+                            new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
+                            self.ERRORS.append(new_error)
+                        else:
+                            if idC is not None:
+                                for p in params:
+                                    if id.type != p['type']:
+                                        new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                        self.ERRORS.append(new_error)
+                                        params.pop(0)
+                                    else:
+                                        params.pop(0)
 
                 if type(a).__name__ == 'MethodCall':
                     if idC is not None:
@@ -1167,15 +1189,16 @@ class MyYAPLVisitor(YAPLVisitor):
         else:
             if type(expr1).__name__ == 'Id':
                 id  = verificaThor(expr1.id,self.variables)
-                if id is None:
-                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
-                    self.ERRORS.append(new_error)
-                else:
-                    if idC is not None:
-                        for p in params:
-                            if id.type != p['type']:
-                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
-                                self.ERRORS.append(new_error)
+                if expr1.id not in self.palabras:
+                    if id is None:
+                        new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,expr1.id)
+                        self.ERRORS.append(new_error)
+                    else:
+                        if idC is not None:
+                            for p in params:
+                                if id.type != p['type']:
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                    self.ERRORS.append(new_error)
 
             if type(expr1).__name__ == 'MethodCall':
                 if idC is not None:
@@ -1183,7 +1206,7 @@ class MyYAPLVisitor(YAPLVisitor):
                         id = encontradorClases(expr1.name,self.table)
                         if id is not None:
                             if id['type']!= p['type']:
-                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.name)
                                 self.ERRORS.append(new_error)
                                 params.pop(0)
                                 break
@@ -1194,7 +1217,7 @@ class MyYAPLVisitor(YAPLVisitor):
                             id = encontradorClases(expr1.name,self.metodos_reservado)
                             if id is not None:
                                 if id['type']!= p['type']:
-                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.name)
                                     self.ERRORS.append(new_error)
                                     params.pop(0)
                                     break
@@ -1280,20 +1303,21 @@ class MyYAPLVisitor(YAPLVisitor):
         for a in arguments:
             if type(a).__name__ == 'Id':
                 id  = verificaThor(a.id,self.variables)
-                if id is None:
-                    new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
-                    self.ERRORS.append(new_error)
-                else:
-                    if idC is not None:
-                        for p in params:
-                            if id.type != p['type']:
-                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
-                                self.ERRORS.append(new_error)
-                                params.pop(0)
-                                break
-                            else:
-                                params.pop(0)
-                                break
+                if a.id not in self.palabras:
+                    if id is None:
+                        new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,a.id)
+                        self.ERRORS.append(new_error)
+                    else:
+                        if idC is not None:
+                            for p in params:
+                                if id.type != p['type']:
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                    self.ERRORS.append(new_error)
+                                    params.pop(0)
+                                    break
+                                else:
+                                    params.pop(0)
+                                    break
 
             if type(a).__name__ == 'MethodCall':
                 if idC is not None:
@@ -1301,7 +1325,7 @@ class MyYAPLVisitor(YAPLVisitor):
                         id = encontradorClases(a.name,self.table)
                         if id is not None:
                             if id['type']!= p['type']:
-                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.name)
                                 self.ERRORS.append(new_error)
                                 params.pop(0)
                                 break
@@ -1312,7 +1336,7 @@ class MyYAPLVisitor(YAPLVisitor):
                             id = encontradorClases(a.name,self.metodos_reservado)
                             if id is not None:
                                 if id['type']!= p['type']:
-                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                    new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.name)
                                     self.ERRORS.append(new_error)
                                     params.pop(0)
                                     break

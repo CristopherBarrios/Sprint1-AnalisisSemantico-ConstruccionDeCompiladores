@@ -48,6 +48,13 @@ def verificaThor(var,arr):
             return id
     return existe
 
+def verificaLoki(var,arr):
+    existe = None
+    for id in arr:
+        if id['name'] == var:
+            return id
+    return existe
+
 def encontradorClases(tipo,tabla):
     for element in tabla:
         if element['name'] == tipo:
@@ -79,6 +86,20 @@ def encontradorMetodosReservados(name,tabla):
         if metodo == name:
             return metodo, tipo
     return None
+
+def atributosHeredados(metodoH,tabla):
+    herencias = []
+    mas = []
+    for elemento in tabla:
+        if elemento['scope'] == metodoH and elemento['kind'] == 'attr':
+            herencias.append(elemento)
+    for elemento in tabla:
+        if elemento['name'] == metodoH and elemento['type'] != 'Int' and elemento['type'] != 'String' and elemento['type'] != 'Bool'and elemento['type'] != 'IO' and elemento['type'] != 'Object' and elemento['type'] != 'SELF_TYPE':
+            mas = atributosHeredados(elemento['type'],tabla)
+            if mas is not None:
+                herencias.extend(mas)
+            return herencias
+    return herencias
 
 
 

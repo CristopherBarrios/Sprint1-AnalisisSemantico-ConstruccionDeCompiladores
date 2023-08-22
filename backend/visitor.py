@@ -324,6 +324,11 @@ class MyYAPLVisitor(YAPLVisitor):
                                 if  tipo != id.type:
                                     new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
                                     self.ERRORS.append(new_error)
+                            if Hered is not None:
+                                if tipo != Hered['type']:
+                                    new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
+                                    self.ERRORS.append(new_error)
+                    
                 elif type(expr).__name__ == 'String' or type(expr).__name__ == 'Int':
                     if  tipo != type(expr).__name__:
                         new_error = tables.Error("No corresponden los tipos de la asignacion", ctx.start.line, ctx.start.column,tipo)
@@ -476,7 +481,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -487,6 +496,10 @@ class MyYAPLVisitor(YAPLVisitor):
             else:
                 if id is not None:
                     if id.type != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                         self.ERRORS.append(new_error)
         
@@ -536,6 +549,21 @@ class MyYAPLVisitor(YAPLVisitor):
                             if Hered_L['type'] != id.type and type(l).__name__ !="Minus" and type(l).__name__ != 'Add' and type(l).__name__ != 'Division' and type(l).__name__ != 'Multiply': 
                                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
                                 self.ERRORS.append(new_error)  
+                if Hered is not None:
+                    if Hered['type'] != 'Int' and Hered['type']!= 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)   
+                    else:
+                        id_L  = verificaThor(ctx.expr(0).getText(),self.variables)
+                        Hered_L = verificaLoki(ctx.expr(0).getText(),self.herencias)
+                        if id_L is not None:
+                            if id_L.type != Hered['type'] and type(l).__name__ !="Minus" and type(l).__name__ != 'Add' and type(l).__name__ != 'Division' and type(l).__name__ != 'Multiply': 
+                                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                                self.ERRORS.append(new_error)  
+                        if Hered_L is not None:
+                            if Hered_L['type'] != Hered['type'] and type(l).__name__ !="Minus" and type(l).__name__ != 'Add' and type(l).__name__ != 'Division' and type(l).__name__ != 'Multiply': 
+                                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                                self.ERRORS.append(new_error)  
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -558,7 +586,22 @@ class MyYAPLVisitor(YAPLVisitor):
                         if Hered_L is not None:
                             if Hered_L['type'] != id.type and type(r).__name__ !="Minus" and type(r).__name__ != 'Add' and type(r).__name__ != 'Division' and type(r).__name__ != 'Multiply': 
                                 new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                                self.ERRORS.append(new_error)   
+                                self.ERRORS.append(new_error) 
+                if Hered is not None:
+                    if  Hered['type'] != 'Int' and  Hered['type'] != 'String':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
+                    else:
+                        id_L  = verificaThor(ctx.expr(1).getText(),self.variables)
+                        Hered_L = verificaLoki(ctx.expr(1).getText(),self.herencias)
+                        if id_L is not None:
+                            if id_L.type !=  Hered['type'] and type(r).__name__ !="Minus" and type(r).__name__ != 'Add' and type(r).__name__ != 'Division' and type(r).__name__ != 'Multiply': 
+                                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                                self.ERRORS.append(new_error)  
+                        if Hered_L is not None:
+                            if Hered_L['type'] !=  Hered['type'] and type(r).__name__ !="Minus" and type(r).__name__ != 'Add' and type(r).__name__ != 'Division' and type(r).__name__ != 'Multiply': 
+                                new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                                self.ERRORS.append(new_error) 
 
         if type(r).__name__ == 'OwnMethod':
             id  = encontradorClases(r.method,self.table)
@@ -647,7 +690,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -659,7 +706,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                        self.ERRORS.append(new_error) 
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la comparacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ != type(r).__name__ :
             if type(l).__name__ !=  "Id" and type(r).__name__ !=  "Id":
@@ -686,7 +737,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la suma", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -802,7 +857,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -814,7 +873,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                        self.ERRORS.append(new_error) 
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la resta", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
 
         if type(r).__name__ == 'IfCount':
             if type(r.exprThen).__name__ != 'Block':
@@ -913,7 +976,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -925,7 +992,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
-                        self.ERRORS.append(new_error) 
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la division", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
 
         if type(r).__name__ == 'IfCount':
             if type(r.exprThen).__name__ != 'Block':
@@ -1024,7 +1095,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
-                        self.ERRORS.append(new_error)   
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
+                        self.ERRORS.append(new_error)
 
         if type(l).__name__ == 'Id':
             id  = verificaThor(ctx.expr(0).getText(),self.variables)
@@ -1036,6 +1111,10 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(0).getText())
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la multiplicacion", ctx.start.line, ctx.start.column,ctx.expr(1).getText())
                         self.ERRORS.append(new_error)
 
         if type(r).__name__ == 'IfCount':
@@ -1174,7 +1253,11 @@ class MyYAPLVisitor(YAPLVisitor):
                 if id is not None:
                     if id.type != 'Int':
                         new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
-                        self.ERRORS.append(new_error)  
+                        self.ERRORS.append(new_error)
+                if Hered is not None:
+                    if Hered['type'] != 'Int':
+                        new_error = tables.Error("No corresponden los tipos de la negacion", ctx.start.line, ctx.start.column,ctx.getText())
+                        self.ERRORS.append(new_error)
 
         if type(ne).__name__ == 'OwnMethod':
             id  = encontradorClases(ne.method,self.table)
@@ -1306,6 +1389,13 @@ class MyYAPLVisitor(YAPLVisitor):
                                             params.pop(0)
                                         else:
                                             params.pop(0)
+                                    elif Hered is not None:
+                                        if Hered['type'] != p['type']:
+                                            new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                            self.ERRORS.append(new_error)
+                                            params.pop(0)
+                                        else:
+                                            params.pop(0)
 
                 if type(a).__name__ == 'MethodCall':
                     if idC is not None:
@@ -1368,6 +1458,10 @@ class MyYAPLVisitor(YAPLVisitor):
                             for p in params:
                                 if id is not None:
                                     if id.type != p['type']:
+                                        new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
+                                        self.ERRORS.append(new_error)
+                                elif Hered is not None:
+                                    if Hered['type'] != p['type']:
                                         new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,expr1.id)
                                         self.ERRORS.append(new_error)
 
@@ -1484,6 +1578,15 @@ class MyYAPLVisitor(YAPLVisitor):
                             for p in params:
                                 if id is not None:
                                     if id.type != p['type']:
+                                        new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
+                                        self.ERRORS.append(new_error)
+                                        params.pop(0)
+                                        break
+                                    else:
+                                        params.pop(0)
+                                        break
+                                elif Hered is not None:
+                                    if Hered['type'] != p['type']:
                                         new_error = tables.Error("No corresponden los tipos con el metodo", ctx.start.line, ctx.start.column,a.id)
                                         self.ERRORS.append(new_error)
                                         params.pop(0)

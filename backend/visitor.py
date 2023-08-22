@@ -378,11 +378,27 @@ class MyYAPLVisitor(YAPLVisitor):
         name = ctx.ID().getText()
         expr = self.visit(ctx.expr())
 
-        id  = verificaThor(ctx.ID().getText(),self.variables)
-        Hered = verificaLoki(ctx.ID().getText(),self.herencias)
-        if id is None and Hered is None:
+        id_name  = verificaThor(ctx.ID().getText(),self.variables)
+        Hered_name = verificaLoki(ctx.ID().getText(),self.herencias)
+        if id_name is None and Hered_name is None:
             new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.ID().getText())
             self.ERRORS.append(new_error) 
+
+        if type(expr).__name__ == 'Id':
+            id  = verificaThor(ctx.expr().getText(),self.variables)
+            Hered = verificaLoki(ctx.expr().getText(),self.herencias)
+            if id is None and Hered is None:
+                new_error = tables.Error("No se declaro la variable", ctx.start.line, ctx.start.column,ctx.expr().getText())
+                self.ERRORS.append(new_error) 
+            else:
+                if id is not None and id_name is not None:
+                    if id.type != id_name.type:
+                        new_error = tables.Error("No corresponden los tipos del assigment", ctx.start.line, ctx.start.column,ctx.expr().getText())
+                        self.ERRORS.append(new_error)
+                if Hered is not None and Hered_name is not None:
+                    if Hered['type'] != Hered_name['type']:
+                        new_error = tables.Error("No corresponden los tipos del assigment", ctx.start.line, ctx.start.column,ctx.expr().getText())
+                        self.ERRORS.append(new_error)
 
         assignement = lista.Assignment(name,expr)
         self.assignment.append(assignement)
